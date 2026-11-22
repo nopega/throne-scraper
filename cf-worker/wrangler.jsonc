@@ -1,0 +1,23 @@
+{
+  "name": "throne-scraper",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-15",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Browser Run (Browser Rendering) binding -> env.BROWSER
+  "browser": { "binding": "BROWSER" },
+
+  // ตั้งเวลารันอัตโนมัติ (เวลา UTC!) ตอนนี้: ทุก 5 นาที (ทดสอบ)
+  // ตัวอย่าง: "0 1 * * *" = ทุกวัน 08:00 เวลาไทย
+  "triggers": { "crons": ["*/5 * * * *"] },
+
+  // ค่าที่ไม่ลับ ใส่ตรงนี้ได้
+  "vars": {
+    "TARGET_URL": "https://throne.com/mizucakes"
+  },
+
+  "observability": { "enabled": true }
+  // ค่าลับ (ห้ามใส่ในไฟล์นี้) ตั้งด้วย:
+  //   npx wrangler secret put DISCORD_WEBHOOK_URL
+  //   npx wrangler secret put RUN_TOKEN      (ถ้าอยากกดรันเองผ่าน URL)
+}

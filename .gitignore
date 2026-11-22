@@ -1,0 +1,21 @@
+# ---- ความลับ: ห้ามขึ้น GitHub ----
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# ---- โปรไฟล์เบราว์เซอร์ (มี cookie/session) ----
+.pw-profile/
+.cf-scraper-profile/
+
+# ---- ของที่สร้างใหม่ได้ ----
+node_modules/
+cf-worker/node_modules/
+cf-worker/.wrangler/
+*.bak
+
+# ---- ผลลัพธ์จากการรัน ----
+result.json
+page.jpg
+error.jpg
+blocked.jpg

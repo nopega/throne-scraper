@@ -1,0 +1,58 @@
+# GitHub Actions: รัน Playwright scraper ตามเวลา แล้วส่งผลไป Discord
+# ไฟล์นี้ต้องอยู่ที่ .github/workflows/scrape.yml
+name: throne-scrape
+
+on:
+  schedule:
+    # เวลา UTC! "0 */2 * * *" = ทุก 2 ชม. (ไทย 07:00, 09:00, 11:00, ...)
+    # GitHub อาจรันช้ากว่าเวลาจริงหลายนาทีตอนคนใช้เยอะ — ปกติ
+    - cron: "0 */2 * * *"
+  workflow_dispatch:        # ปุ่ม "Run workflow" ในแท็บ Actions ไว้เทส
+
+# กันรันซ้อนกัน ถ้ารอบก่อนยังไม่จบ
+concurrency:
+  group: throne-scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10      # กันค้างแล้วกินนาทีฟรี
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # npm ci จะรัน postinstall = playwright install chromium ให้เอง
+      - name: Install dependencies
+        run: npm ci
+
+      # ติดตั้ง library ระบบที่ Chromium ต้องใช้ (รวม xvfb = จอเสมือน)
+      - name: Install Chromium system deps
+        run: npx playwright install-deps chromium
+
+      # รันแบบมีหน้าต่างบนจอเสมือน (xvfb) — ผ่าน Cloudflare ได้ง่ายกว่า headless
+      # ไม่ใช้ `npm start` เพราะมันอ่าน .env ซึ่งไม่มีบน GitHub (ใช้ secrets แทน)
+      - name: Scrape
+        run: xvfb-run --auto-servernum node index.js --headed
+        env:
+          TARGET_URL: ${{ vars.TARGET_URL || 'https://throne.com/mizucakes' }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          CF_TIMEOUT: "60"
+
+      # เก็บไฟล์ผลลัพธ์ไว้ดาวน์โหลดจากหน้า run (เก็บ 7 วัน) — ดูได้แม้ตอน error
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-${{ github.run_number }}
+          path: |
+            result.json
+            page.jpg
+            error.jpg
+          if-no-files-found: ignore
+          retention-days: 7
