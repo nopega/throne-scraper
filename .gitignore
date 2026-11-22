@@ -15,6 +15,7 @@ cf-worker/.wrangler/
 *.bak
 
 # ---- ผลลัพธ์จากการรัน ----
+state/
 result.json
 page.jpg
 error.jpg

@@ -4,9 +4,8 @@ name: throne-scrape
 
 on:
   schedule:
-    # เวลา UTC! "0 */2 * * *" = ทุก 2 ชม. (ไทย 07:00, 09:00, 11:00, ...)
-    # GitHub อาจรันช้ากว่าเวลาจริงหลายนาทีตอนคนใช้เยอะ — ปกติ
-    - cron: "0 */2 * * *"
+    # ทุก 30 นาที (GitHub อาจรันช้ากว่าเวลาจริงหลายนาทีตอนคนใช้เยอะ — ปกติ)
+    - cron: "*/30 * * * *"
   workflow_dispatch:        # ปุ่ม "Run workflow" ในแท็บ Actions ไว้เทส
 
 # กันรันซ้อนกัน ถ้ารอบก่อนยังไม่จบ
@@ -17,10 +16,19 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 10      # กันค้างแล้วกินนาทีฟรี
+    timeout-minutes: 3       # ปกติใช้ ~50 วิ — กันค้างแล้วกินนาทีฟรี
 
     steps:
       - uses: actions/checkout@v4
+
+      # ดึงผลรอบก่อน (state/last.json) กลับมา เพื่อเทียบว่ามีอะไรเปลี่ยนไหม
+      # cache แก้ทับไม่ได้ เลยใช้ key ใหม่ทุกรอบ แล้วดึงตัวล่าสุดด้วย restore-keys
+      - name: Restore last state
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: scrape-state-${{ github.run_id }}
+          restore-keys: scrape-state-
 
       - uses: actions/setup-node@v4
         with:
@@ -43,6 +51,16 @@ jobs:
           TARGET_URL: ${{ vars.TARGET_URL || 'https://throne.com/mizucakes' }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           CF_TIMEOUT: "60"
+          # "true" = ส่ง Discord ทุกรอบ แม้ไม่มีอะไรเปลี่ยน
+          NOTIFY_ALWAYS: "false"
+
+      # เก็บผลรอบนี้ไว้ให้รอบหน้าเทียบ (ทำแม้ step ก่อนหน้า error เพื่อจำสถานะ error ไว้)
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: scrape-state-${{ github.run_id }}
 
       # เก็บไฟล์ผลลัพธ์ไว้ดาวน์โหลดจากหน้า run (เก็บ 7 วัน) — ดูได้แม้ตอน error
       - name: Upload results
