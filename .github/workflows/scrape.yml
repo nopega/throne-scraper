@@ -5,7 +5,7 @@ name: throne-scrape
 on:
   schedule:
     # ทุก 30 นาที (GitHub อาจรันช้ากว่าเวลาจริงหลายนาทีตอนคนใช้เยอะ — ปกติ)
-    - cron: "*/30 * * * *"
+    - cron: "17,47 * * * *"
   workflow_dispatch:        # ปุ่ม "Run workflow" ในแท็บ Actions ไว้เทส
 
 # กันรันซ้อนกัน ถ้ารอบก่อนยังไม่จบ
