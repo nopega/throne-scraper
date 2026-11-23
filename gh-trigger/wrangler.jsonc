@@ -1,0 +1,19 @@
+{
+  "name": "throne-gh-trigger",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-15",
+
+  // เวลา UTC — Cloudflare ยิงตรงเวลา: ทุก 30 นาที (นาที :02 และ :32)
+  "triggers": { "crons": ["2,32 * * * *"] },
+
+  "vars": {
+    "GH_REPO": "nopega/throne-scraper",
+    "GH_WORKFLOW": "scrape.yml",
+    "GH_REF": "main"
+  },
+
+  "observability": { "enabled": true }
+  // ค่าลับ ตั้งด้วย:
+  //   npx wrangler secret put GITHUB_TOKEN
+  //   npx wrangler secret put RUN_TOKEN    (ไม่บังคับ)
+}

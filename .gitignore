@@ -11,7 +11,7 @@
 # ---- ของที่สร้างใหม่ได้ ----
 node_modules/
 cf-worker/node_modules/
-cf-worker/.wrangler/
+.wrangler/
 *.bak
 
 # ---- ผลลัพธ์จากการรัน ----
